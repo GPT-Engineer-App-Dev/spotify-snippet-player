@@ -1,5 +1,3 @@
-// Complete the Index page component here
-// Use chakra-ui
 import { Box, Input, Button, Text, Image, useToast } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 
@@ -12,21 +10,41 @@ const Index = () => {
 
   useEffect(() => {
     const fetchToken = async () => {
-      const response = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: 'Basic ' + btoa('4642e3fdf761477991140a71ec36597e:1f1ef85b93cc467290f77cdcca6b5cd1')
-        },
-        body: 'grant_type=client_credentials'
-      });
-      const data = await response.json();
-      setAccessToken(data.access_token);
+      try {
+        const response = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Authorization: 'Basic ' + btoa('4642e3fdf761477991140a71ec36597e:1f1ef85b93cc467290f77cdcca6b5cd1')
+          },
+          body: 'grant_type=client_credentials'
+        });
+        const data = await response.json();
+        setAccessToken(data.access_token);
+      } catch (error) {
+        toast({
+          title: 'Authentication Error',
+          description: 'Failed to fetch Spotify access token.',
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+        });
+      }
     };
     fetchToken();
   }, []);
 
   const handleSearch = async () => {
+    if (!accessToken) {
+      toast({
+        title: 'Error',
+        description: 'Access token is not available.',
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+      });
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(search)}&type=track&limit=1`, {
@@ -40,7 +58,7 @@ const Index = () => {
       setLoading(false);
     } catch (error) {
       toast({
-        title: 'Error',
+        title: 'Search Error',
         description: 'Failed to fetch song data.',
         status: 'error',
         duration: 9000,
