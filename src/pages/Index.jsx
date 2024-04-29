@@ -1,20 +1,37 @@
 // Complete the Index page component here
 // Use chakra-ui
 import { Box, Input, Button, Text, Image, useToast } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const Index = () => {
   const [search, setSearch] = useState('');
   const [song, setSong] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [accessToken, setAccessToken] = useState('');
   const toast = useToast();
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const response = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: 'Basic ' + btoa('4642e3fdf761477991140a71ec36597e:1f1ef85b93cc467290f77cdcca6b5cd1')
+        },
+        body: 'grant_type=client_credentials'
+      });
+      const data = await response.json();
+      setAccessToken(data.access_token);
+    };
+    fetchToken();
+  }, []);
 
   const handleSearch = async () => {
     setLoading(true);
     try {
       const response = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(search)}&type=track&limit=1`, {
         headers: {
-          Authorization: `Bearer ${your_access_token_here}`, // Token needs to be dynamically fetched
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
         }
       });
